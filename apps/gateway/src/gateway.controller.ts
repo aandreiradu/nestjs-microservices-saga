@@ -21,6 +21,6 @@ export class GatewayController {
 
   @Get('orders/:orderId')
   async getOrderStatus(@Param('orderId') orderId: string) {
-    return { orderId };
+    return this.gatewayService.fetchOrderStatus(orderId);
   }
 }
