@@ -4,27 +4,44 @@ import {
   Logger,
   ServiceUnavailableException,
 } from '@nestjs/common';
-import { lastValueFrom } from 'rxjs';
+import { lastValueFrom, timeout } from 'rxjs';
 import { ClientProxy } from '@nestjs/microservices';
+import { PlaceOrderDTO } from './dto/order.dto';
 
 @Injectable()
 export class OrdersService {
   private readonly logger: Logger = new Logger(OrdersService.name);
-  constructor(@Inject('ORDERS_SERVICE') private rabbitClient: ClientProxy) {}
 
-  async placeOrder(order: any) {
+  constructor(
+    @Inject('INVENTORY_SERVICE') private readonly inventoryClient: ClientProxy,
+  ) {}
+
+  async checkInventory(order: PlaceOrderDTO) {
     try {
-      await lastValueFrom(
-        this.rabbitClient.emit('order_placed', JSON.stringify(order)),
+      const response = await lastValueFrom(
+        this.inventoryClient
+          .send({ cmd: 'check_inventory' }, JSON.stringify(order))
+          .pipe(timeout(5000)),
       );
+
+      console.log('response', response);
+      return response;
+
+      const inventoryData = this.inventoryClient
+        .emit({ cmd: 'check_inventory' }, JSON.stringify(order))
+        .pipe(timeout(5000));
+
+      this.logger.debug('inventoryData is', inventoryData);
     } catch (error) {
       this.logger.warn(
-        `Failed to place order with details ${JSON.stringify(order)}`,
+        `Failed to check inventory for order with details ${JSON.stringify(
+          order,
+        )}`,
       );
-      this.logger.error(error);
+      this.logger.error(JSON.stringify(error));
 
       throw new ServiceUnavailableException(
-        'Failed to place order. Try again later',
+        'Failed to check inventory. Try again later',
       );
     }
   }
