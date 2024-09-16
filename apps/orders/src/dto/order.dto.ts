@@ -6,5 +6,7 @@ export class PlaceOrderDTO {
     public productName: string,
 
     public productId: string,
+
+    public orderId: string,
   ) {}
 }

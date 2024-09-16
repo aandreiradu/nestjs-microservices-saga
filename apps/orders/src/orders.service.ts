@@ -18,20 +18,13 @@ export class OrdersService {
 
   async checkInventory(order: PlaceOrderDTO) {
     try {
-      const response = await lastValueFrom(
+      const response = await lastValueFrom<boolean>(
         this.inventoryClient
           .send({ cmd: 'check_inventory' }, JSON.stringify(order))
           .pipe(timeout(5000)),
       );
 
-      console.log('response', response);
       return response;
-
-      const inventoryData = this.inventoryClient
-        .emit({ cmd: 'check_inventory' }, JSON.stringify(order))
-        .pipe(timeout(5000));
-
-      this.logger.debug('inventoryData is', inventoryData);
     } catch (error) {
       this.logger.warn(
         `Failed to check inventory for order with details ${JSON.stringify(
