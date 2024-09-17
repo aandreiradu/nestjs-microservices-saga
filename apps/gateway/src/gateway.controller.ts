@@ -1,6 +1,7 @@
-import { Body, Controller, Get, Param, Post } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Sse } from '@nestjs/common';
 import { GatewayService } from './gateway.service';
 import { uuid } from 'uuidv4';
+import { EventPattern, Payload } from '@nestjs/microservices';
 
 @Controller()
 export class GatewayController {
@@ -19,8 +20,16 @@ export class GatewayController {
     };
   }
 
-  @Get('orders/:orderId')
+  @Sse('orders-updates/:orderId')
   async getOrderStatus(@Param('orderId') orderId: string) {
     return this.gatewayService.fetchOrderStatus(orderId);
+  }
+
+  @EventPattern('order_update')
+  handleOrderUpdate(@Payload() data: any) {
+    console.log(
+      `processing order_update event with data ${JSON.stringify(data)}`,
+    );
+    this.gatewayService.sendUpdate(data?.orderId, data);
   }
 }

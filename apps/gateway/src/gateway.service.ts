@@ -5,11 +5,18 @@ import {
   ServiceUnavailableException,
 } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
-import { lastValueFrom } from 'rxjs';
+import { Observable, Subject, lastValueFrom } from 'rxjs';
 
+export interface CustomMessageEvent<T = any> {
+  data: T;
+  event?: string;
+  id?: string;
+}
 @Injectable()
 export class GatewayService {
   private readonly logger: Logger = new Logger(GatewayService.name);
+  private orderUpdates = new Map<string, Subject<CustomMessageEvent>>();
+
   constructor(@Inject('ORDERS_SERVICE') private rabbitClient: ClientProxy) {}
   async placeOrder(order: any) {
     try {
@@ -33,14 +40,31 @@ export class GatewayService {
     }
   }
 
+  sendUpdate(orderId: string, update: any) {
+    const event: CustomMessageEvent = {
+      data: update,
+      id: orderId,
+      event: 'order-update',
+    };
+
+    if (this.orderUpdates.has(orderId)) {
+      this.orderUpdates.get(orderId).next(event);
+    }
+  }
+
+  getOrderUpdates(orderId: string): Observable<CustomMessageEvent> {
+    if (!this.orderUpdates.has(orderId)) {
+      this.orderUpdates.set(orderId, new Subject<MessageEvent>());
+    }
+
+    return this.orderUpdates.get(orderId).asObservable();
+  }
+
   async fetchOrderStatus(orderId: string) {
     try {
       const orderStatus = await lastValueFrom(
         this.rabbitClient.send('fetch_orderStatus', orderId),
       );
-
-      this.logger.log('orderStatus is');
-      this.logger.log(JSON.stringify(orderStatus));
 
       return orderStatus;
     } catch (error) {
