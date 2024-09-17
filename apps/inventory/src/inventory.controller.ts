@@ -11,6 +11,6 @@ export class InventoryController {
     console.log(context.getMessage());
     console.log('processing the message from inventory');
 
-    return false;
+    return true;
   }
 }
