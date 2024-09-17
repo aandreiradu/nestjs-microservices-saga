@@ -5,15 +5,7 @@ import {
   Logger,
 } from '@nestjs/common';
 import { OrdersService } from './orders.service';
-import {
-  Ctx,
-  EventPattern,
-  MessagePattern,
-  Payload,
-  RmqContext,
-} from '@nestjs/microservices';
-import { PlaceOrderDTO } from './dto/order.dto';
-import { ORDERS_STATUSES } from '@app/common/constants/services';
+import { EventPattern, MessagePattern, Payload } from '@nestjs/microservices';
 
 @Controller()
 export class OrdersController {
