@@ -20,7 +20,7 @@ export class GatewayController {
     };
   }
 
-  @Sse('orders-updates/:orderId')
+  @Get('orders/:orderId')
   async getOrderStatus(@Param('orderId') orderId: string) {
     return this.gatewayService.fetchOrderStatus(orderId);
   }
