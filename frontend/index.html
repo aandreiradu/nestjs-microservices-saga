@@ -1,0 +1,19 @@
+<script type="text/javascript">
+    // const eventSource = new EventSource('/sse');
+    // eventSource.onmessage = ({ data }) => {
+    //   const message = document.createElement('li');
+    //   message.innerText = 'New message: ' + data;
+    //   document.body.appendChild(message);
+    // }
+
+    const orderId = "2b8d562e-0c37-467f-b771-8150f508ca88";
+    const eventSource = new EventSource(`http://localhost:3000/orders-updates/${orderId}`)
+
+    eventSource.onmessage = function(event) {
+        console.log('RECEIVED EVENT FROM SERVER',event);
+    }
+
+    eventSource.onerror = function(err) { 
+        console.error('EventSource failed:', err);
+    }
+  </script>
