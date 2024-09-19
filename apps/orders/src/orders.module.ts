@@ -3,12 +3,18 @@ import { OrdersController } from './orders.controller';
 import { OrdersService } from './orders.service';
 import { ConfigModule } from '@nestjs/config';
 import { ClientsModule, Transport } from '@nestjs/microservices';
-import { GatewayModule } from 'apps/gateway/src/gateway.module';
-import { GatewayService } from 'apps/gateway/src/gateway.service';
+import { DatabaseModule } from '@app/common/database/database.module';
+import { MongooseModule } from '@nestjs/mongoose';
+import { Order, OrderSchema } from './schemas/order.schema';
 
 @Module({
   imports: [
-    ConfigModule.forRoot({ isGlobal: true }),
+    ConfigModule.forRoot({ isGlobal: true, envFilePath: './apps/orders/.env' }),
+    DatabaseModule.dbConnector({
+      name: 'ORDERS',
+      connectionString: 'DB_CONNECTIONSTRING',
+    }),
+    MongooseModule.forFeature([{ name: Order.name, schema: OrderSchema }]),
     ClientsModule.register([
       {
         name: 'INVENTORY_SERVICE',
