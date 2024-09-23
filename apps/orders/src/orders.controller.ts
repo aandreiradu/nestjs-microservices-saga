@@ -31,4 +31,9 @@ export class OrdersController {
       throw new InternalServerErrorException('Failed to retrieve order status');
     }
   }
+
+  @MessagePattern('inventory_check')
+  async handleInventoryCheck(@Payload() inventoryCheckPayload) {
+    await this.ordersService.handleInventoryCheckEvent(inventoryCheckPayload);
+  }
 }
