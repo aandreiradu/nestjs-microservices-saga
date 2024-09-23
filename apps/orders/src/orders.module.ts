@@ -6,6 +6,7 @@ import { ClientsModule, Transport } from '@nestjs/microservices';
 import { DatabaseModule } from '@app/common/database/database.module';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Order, OrderSchema } from './schemas/order.schema';
+import { OrdersRepository } from './orders.repository';
 
 @Module({
   imports: [
@@ -43,7 +44,7 @@ import { Order, OrderSchema } from './schemas/order.schema';
     ]),
   ],
   controllers: [OrdersController],
-  providers: [OrdersService],
+  providers: [OrdersService, OrdersRepository],
   exports: [OrdersService],
 })
 export class OrdersModule {}
