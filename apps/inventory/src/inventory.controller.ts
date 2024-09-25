@@ -9,7 +9,6 @@ export class InventoryController {
   @EventPattern('check_inventory')
   getOrders(@Ctx() context: RmqContext) {
     console.log('processing the message from inventory');
-
     return true;
   }
 }

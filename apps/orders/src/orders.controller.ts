@@ -14,7 +14,12 @@ export class OrdersController {
 
   @EventPattern('create_order')
   async handleOrderPlaced(@Payload() data: any) {
-    await this.ordersService.handleOrderPlaced(data);
+    return this.ordersService.handleOrderPlaced(data);
+  }
+
+  @MessagePattern('inventory_check')
+  async handleInventoryCheck(@Payload() inventoryCheckPayload) {
+    await this.ordersService.handleInventoryCheckEvent(inventoryCheckPayload);
   }
 
   @MessagePattern('fetch_orderStatus')
@@ -30,10 +35,5 @@ export class OrdersController {
 
       throw new InternalServerErrorException('Failed to retrieve order status');
     }
-  }
-
-  @MessagePattern('inventory_check')
-  async handleInventoryCheck(@Payload() inventoryCheckPayload) {
-    await this.ordersService.handleInventoryCheckEvent(inventoryCheckPayload);
   }
 }

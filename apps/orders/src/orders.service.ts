@@ -27,7 +27,7 @@ export class OrdersService {
     private readonly ordersRepository: OrdersRepository,
   ) {}
 
-  async handleOrderPlaced(orderMessage: string): Promise<void> {
+  async handleOrderPlaced(orderMessage: string) {
     try {
       const orderData = JSON.parse(orderMessage) as PlaceOrderDTO;
       const order = await this.ordersRepository.createOrder({
@@ -35,15 +35,17 @@ export class OrdersService {
         status: ORDERS_STATUSES.PROCESSING,
       });
 
-      this.inventoryClient.emit('check_inventory', JSON.stringify(order));
-
       const stockAvailable = await this.checkInventory(orderData);
 
       if (!stockAvailable) {
         await this.ordersRepository.updateOrderById(order.orderId, {
           status: ORDERS_STATUSES.OUT_OF_STOCK,
         });
-        return;
+
+        return {
+          isSuccess: false,
+          message: 'Some products are out of stock. Your order was cancelled',
+        };
       }
 
       await this.ordersRepository.updateOrderById(order.orderId, {
@@ -51,18 +53,7 @@ export class OrdersService {
         status: ORDERS_STATUSES.STOCK_CONFIRMED,
       });
 
-      const paymentLink = await lastValueFrom(
-        this.paymentClient
-          .send({ cmd: 'initiate_payment' }, JSON.stringify(order))
-          .pipe(timeout(5000)),
-      );
-
-      if (!paymentLink) {
-        this.logger.error(
-          `Failed to generate payment link for order ${JSON.stringify(error)}`,
-        );
-        return;
-      }
+      this.paymentClient.emit('initiate_payment', JSON.stringify(order));
 
       await this.ordersRepository.updateOrderById(order.orderId, {
         status: ORDERS_STATUSES.AWAITING_PAYMENT,
@@ -136,7 +127,7 @@ export class OrdersService {
       throw new InternalServerErrorException('Failed to retrieve order status');
     }
   }
-  async checkInventory(order: PlaceOrderDTO) {
+  async checkInventory(order: PlaceOrderDTO): Promise<boolean> {
     try {
       const response = await lastValueFrom<boolean>(
         this.inventoryClient
