@@ -35,9 +35,7 @@ export class OrdersService {
         status: ORDERS_STATUSES.PROCESSING,
       });
 
-      this.inventoryClient
-        .send('check_inventory', JSON.stringify(order))
-        .pipe(timeout(5000));
+      this.inventoryClient.emit('check_inventory', JSON.stringify(order));
 
       const stockAvailable = await this.checkInventory(orderData);
 

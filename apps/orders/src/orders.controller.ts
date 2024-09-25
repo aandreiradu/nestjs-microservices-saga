@@ -14,7 +14,7 @@ export class OrdersController {
 
   @EventPattern('create_order')
   async handleOrderPlaced(@Payload() data: any) {
-    return this.ordersService.handleOrderPlaced(data);
+    await this.ordersService.handleOrderPlaced(data);
   }
 
   @MessagePattern('fetch_orderStatus')
