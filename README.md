@@ -4,4 +4,4 @@
 
 ## Description
 
-WIP Repository - Saga Pattern using Typescript,NestJS,RabbitMQ and MongoDB
+WIP Repository - Choreography-Based Saga Pattern using Typescript,NestJS,RabbitMQ and MongoDB
