@@ -17,6 +17,11 @@ export class OrdersController {
     return this.ordersService.handleOrderPlaced(data);
   }
 
+  @MessagePattern('inventory_check')
+  async handleInventoryCheck(@Payload() inventoryCheckPayload) {
+    await this.ordersService.handleInventoryCheckEvent(inventoryCheckPayload);
+  }
+
   @MessagePattern('fetch_orderStatus')
   async handleFetchOrderStatus(@Payload() orderId: string) {
     try {

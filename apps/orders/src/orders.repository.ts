@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { Order, OrderDocument } from './schemas/order.schema';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
@@ -17,11 +17,20 @@ export class OrdersRepository {
     return order;
   }
 
-  async updateOrderById(orderId: string, orderData: Omit<Order, 'orderId'>) {
-    return this.ordermMdel.findOneAndUpdate(
+  async updateOrderById(
+    orderId: string,
+    orderData: Omit<Partial<Order>, 'orderId'>,
+  ): Promise<Order> {
+    const updatedOrder = await this.ordermMdel.findOneAndUpdate(
       { orderId },
-      { ...orderData },
+      { $set: orderData },
       { new: true },
     );
+
+    if (!updatedOrder) {
+      throw new NotFoundException('Order not foud');
+    }
+
+    return updatedOrder;
   }
 }
